@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420">
+  <rect width="920" height="420" fill="#e6e0d4"/>
+  <g font-family="Georgia, serif" fill="#1b1915">
+    <text x="40" y="48" font-size="28">WorthIt</text>
+    <text x="40" y="72" font-family="ui-monospace, monospace" font-size="12" fill="#6f675e">one ledger, three devices</text>
+  </g>
+  <g font-family="ui-monospace, monospace" font-size="13" fill="#1b1915">
+    <rect x="40" y="110" width="240" height="120" fill="#f4f0e7" stroke="#1b1915"/>
+    <text x="56" y="140">Watch4</text>
+    <text x="56" y="164" fill="#6f675e">accel + gyro</text>
+    <text x="56" y="184" fill="#6f675e">wake buzz</text>
+    <text x="56" y="204" fill="#6f675e">tile, check-off</text>
+
+    <rect x="340" y="110" width="240" height="120" fill="#f4f0e7" stroke="#b8431f"/>
+    <text x="356" y="140">Phone browser</text>
+    <text x="356" y="164" fill="#6f675e">Camera Kit gate</text>
+    <text x="356" y="184" fill="#6f675e">YouCam raw_score</text>
+    <text x="356" y="204" fill="#6f675e">mask split</text>
+
+    <rect x="640" y="110" width="240" height="120" fill="#f4f0e7" stroke="#1b1915"/>
+    <text x="656" y="140">Phone sync</text>
+    <text x="656" y="164" fill="#6f675e">Health Connect sleep</text>
+    <text x="656" y="184" fill="#6f675e">period, if today</text>
+    <text x="656" y="204" fill="#6f675e">no invented RMSSD</text>
+
+    <rect x="250" y="290" width="420" height="90" fill="#1b1915"/>
+    <text x="270" y="325" fill="#e6e0d4">Next.js ledger</text>
+    <text x="270" y="350" fill="#cfc6b8">noise floor, NIG verdict, claim check, SSE counter</text>
+  </g>
+  <g stroke="#b8431f" fill="none" stroke-width="1.4">
+    <path d="M160 230 V290 H460"/>
+    <path d="M460 230 V290"/>
+    <path d="M760 230 V270 H670 V290"/>
+  </g>
+</svg>

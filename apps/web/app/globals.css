@@ -1,0 +1,271 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Clinical luxe tokens (RGB triplets so Tailwind can apply alpha) ---------- */
+:root {
+  color-scheme: light;
+  --paper: 247 242 234;
+  --card: 255 252 247;
+  --elevated: 255 255 255;
+  --ink: 28 24 20;
+  --quiet: 107 98 89;
+  --line: 229 220 206;
+  --clay: 178 80 48;
+  --peach: 242 196 166;
+  --sage: 52 117 86;
+  --amber: 161 106 22;
+  --rose: 180 58 74;
+  --screen: 22 20 18;
+  --screen-ink: 246 240 231;
+  --glow-a: 242 190 160;
+  --glow-b: 214 228 214;
+  /* chart series, validated with the dataviz palette script */
+  --on-clay: 255 255 255;
+  --series-a: 184 90 54;
+  --series-b: 61 114 184;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: 19 17 15;
+  --card: 29 26 23;
+  --elevated: 38 34 30;
+  --ink: 243 237 228;
+  --quiet: 170 160 148;
+  --line: 58 52 46;
+  --clay: 230 136 100;
+  --peach: 128 78 54;
+  --sage: 126 198 160;
+  --amber: 226 176 96;
+  --rose: 238 128 140;
+  --screen: 10 9 8;
+  --screen-ink: 246 240 231;
+  --glow-a: 120 62 40;
+  --glow-b: 40 70 56;
+  --on-clay: 33 20 13;
+  --series-a: 210 116 80;
+  --series-b: 90 138 208;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: 19 17 15;
+    --card: 29 26 23;
+    --elevated: 38 34 30;
+    --ink: 243 237 228;
+    --quiet: 170 160 148;
+    --line: 58 52 46;
+    --clay: 230 136 100;
+    --peach: 128 78 54;
+    --sage: 126 198 160;
+    --amber: 226 176 96;
+    --rose: 238 128 140;
+    --screen: 10 9 8;
+    --screen-ink: 246 240 231;
+    --glow-a: 120 62 40;
+    --glow-b: 40 70 56;
+  --on-clay: 33 20 13;
+  --series-a: 210 116 80;
+  --series-b: 90 138 208;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100vh;
+  background-color: rgb(var(--paper));
+  background-image:
+    radial-gradient(900px 520px at 8% -8%, rgb(var(--glow-a) / 0.45), transparent 60%),
+    radial-gradient(800px 480px at 100% 0%, rgb(var(--glow-b) / 0.5), transparent 60%);
+  background-repeat: no-repeat;
+  color: rgb(var(--ink));
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+}
+
+:root[data-theme="dark"] body::before {
+  mix-blend-mode: screen;
+  opacity: 0.03;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+::selection {
+  background: rgb(var(--clay) / 0.22);
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--clay));
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* ---------- Small utilities ---------- */
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.glass {
+  background: rgb(var(--card) / 0.72);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+
+.hairline {
+  box-shadow: inset 0 0 0 1px rgb(var(--line));
+}
+
+.kicker {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.dotgrid {
+  background-image: radial-gradient(rgb(var(--ink) / 0.09) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}
+
+/* SVG helpers used by the illustrations */
+.flow-dash {
+  stroke-dasharray: 3 7;
+  animation: flow 1.6s linear infinite;
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.draw-line {
+  stroke-dasharray: 4000;
+  stroke-dashoffset: 4000;
+  animation: draw 2.4s ease-out forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.ripple-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ripple 2.2s ease-out infinite;
+}
+
+.ripple-ring.delay-1 {
+  animation-delay: 0.7s;
+}
+
+.ripple-ring.delay-2 {
+  animation-delay: 1.4s;
+}
+
+.ripple-once {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ripple 1.1s ease-out 1 forwards;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+.scan-line {
+  animation: scanline 3.2s ease-in-out infinite;
+}
+
+@keyframes scanline {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(var(--scan-travel, 120px));
+    opacity: 0.95;
+  }
+}
+
+.buzz {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: buzz 0.5s ease-in-out 1;
+}
+
+@keyframes buzz {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-3deg);
+  }
+  40% {
+    transform: rotate(3deg);
+  }
+  60% {
+    transform: rotate(-2deg);
+  }
+  80% {
+    transform: rotate(2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .draw-line {
+    stroke-dashoffset: 0;
+  }
+  .ripple-ring {
+    opacity: 0;
+  }
+}
