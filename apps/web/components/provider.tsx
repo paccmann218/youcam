@@ -39,8 +39,30 @@ export function ProofProvider({ children }: { children: React.ReactNode }) {
     setReady(true);
   }, []);
 
+  // Stays live: anything the watch sends (touches, check-offs) or coming back to the tab reloads the view.
   useEffect(() => {
-    void refresh();
+    let closed = false;
+    let source: EventSource | null = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    void refresh().then(() => {
+      if (closed) return;
+      source = new EventSource("/api/events/stream");
+      source.onmessage = (message) => {
+        if ((JSON.parse(message.data) as { type?: string }).type === "hello") return;
+        clearTimeout(timer);
+        timer = setTimeout(() => void refresh(), 400);
+      };
+    });
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      closed = true;
+      source?.close();
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [refresh]);
 
   return <Ctx.Provider value={{ view, status, ready, error, refresh }}>{children}</Ctx.Provider>;
