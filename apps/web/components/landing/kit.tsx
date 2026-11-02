@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion, useSpring } from "framer-motion";
 import { Fragment, useRef, type ReactNode } from "react";
+import { LogoMark } from "../brand";
 import { cx } from "../ui/cx";
 
 export const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -185,15 +186,11 @@ export function CropMarks({ className }: { className?: string }) {
   );
 }
 
-/** The WorthIt mark set in the landing typeface. */
+/** The WorthIt logo set in the landing typeface. */
 export function LandingMark({ className }: { className?: string }) {
   return (
     <span className={cx("inline-flex items-center gap-2.5", className)}>
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-clay">
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="m5.5 12.5 4 4 9-9" />
-        </svg>
-      </span>
+      <LogoMark className="h-9 w-9 shrink-0" />
       <span className="font-display text-[1.6rem] font-semibold leading-none tracking-[-0.02em]">
         Worth<span className="font-normal italic text-clay">It</span>
       </span>

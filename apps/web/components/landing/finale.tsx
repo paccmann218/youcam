@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { LogoMark } from "../brand";
 import { cx } from "../ui/cx";
 import { Arrow, EASE_OUT, Magnetic, SectionTag, SplitWords, WRAP } from "./kit";
 
@@ -19,11 +20,7 @@ function Seal() {
           </textPath>
         </text>
       </svg>
-      <div className="absolute inset-[29%] flex items-center justify-center rounded-full bg-clay text-on-clay">
-        <svg viewBox="0 0 24 24" className="h-1/2 w-1/2" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m5.5 12.5 4 4 9-9" />
-        </svg>
-      </div>
+      <LogoMark className="absolute inset-[30%] h-[40%] w-[40%]" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- WorthIt launcher icon: a yellow disc with a thick ink border and a bold ink check. -->
+<!-- WorthIt launcher icon: the W mark (a data line that breaks out of the wobble band, ending on a data point),
+     drawn in the watch's neobrutalist style: yellow disc, thick ink outline, clay point. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -8,7 +9,14 @@
     <path android:fillColor="#111111" android:pathData="M58,58m-46,0a46,46 0,1 1,92 0a46,46 0,1 1,-92 0" />
     <path android:fillColor="#FFD23F" android:strokeColor="#111111" android:strokeWidth="6"
         android:pathData="M54,54m-44,0a44,44 0,1 1,88 0a44,44 0,1 1,-88 0" />
-    <path android:fillColor="#00000000" android:strokeColor="#111111" android:strokeWidth="10"
+    <!-- the wobble band -->
+    <path android:fillColor="#00000000" android:strokeColor="#111111" android:strokeWidth="2.5"
+        android:strokeAlpha="0.3" android:pathData="M25,49.2 L83,49.2 M25,67.6 L83,67.6" />
+    <!-- the W -->
+    <path android:fillColor="#00000000" android:strokeColor="#111111" android:strokeWidth="9"
         android:strokeLineCap="round" android:strokeLineJoin="round"
-        android:pathData="M33,56 L48,71 L76,40" />
+        android:pathData="M31.6,44.4 L42.2,72.4 L54,55.6 L65.8,72.4 L76.4,37.2" />
+    <!-- the data point -->
+    <path android:fillColor="#FF7A45" android:strokeColor="#111111" android:strokeWidth="4"
+        android:pathData="M76.4,37.2m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0" />
 </vector>

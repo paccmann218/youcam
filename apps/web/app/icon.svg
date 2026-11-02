@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- WorthIt mark: a W drawn as a data line that breaks out of the wobble band. Same geometry as MARK in components/brand.tsx. -->
+  <rect width="48" height="48" rx="12" fill="#1C1814"/>
+  <path d="M6 21 H42 M6 32.5 H42" stroke="#F7F2EA" stroke-width="1.1" stroke-dasharray="2 2.2" opacity=".38"/>
+  <path d="M10 18 L16.6 35.5 L24 25 L31.4 35.5" fill="none" stroke="#F7F2EA" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="miter" stroke-miterlimit="10"/>
+  <path d="M31.4 35.5 L38 13.5" fill="none" stroke="#E07A50" stroke-width="3.6" stroke-linecap="round"/>
+  <circle cx="38" cy="13.5" r="3.4" fill="#E07A50"/>
+</svg>
