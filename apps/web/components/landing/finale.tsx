@@ -59,7 +59,7 @@ export function Finale() {
     <section className="theme-night relative overflow-hidden bg-paper text-ink">
       <div aria-hidden="true" className="absolute -left-32 top-24 h-[30rem] w-[30rem] rounded-full bg-clay/25 blur-[130px]" />
       <div className={cx(WRAP, "relative pb-16 pt-28 md:pt-40")}>
-        <SectionTag index="06" label="Start tonight" />
+        <SectionTag index="05" label="Start tonight" />
         <div className="mt-14 flex flex-col gap-12 md:mt-20 lg:flex-row lg:items-end lg:justify-between">
           <h2 className="font-display text-[clamp(3.6rem,11vw,11.5rem)] font-medium leading-[0.86] tracking-[-0.04em]">
             <SplitWords text="Stop paying" />

@@ -111,7 +111,7 @@ export function Verdicts() {
   }
 
   return (
-    <section id="verdicts" className="relative py-24 md:py-36">
+    <section id="verdicts" className="theme-night relative bg-paper py-24 text-ink md:py-36">
       <div className={WRAP}>
         <SectionTag index="03" label="The verdicts" fig="Fig. 03" />
         <h2 className="mt-14 font-display text-[clamp(2.6rem,5.4vw,5.6rem)] font-medium leading-[0.98] tracking-[-0.03em] lg:mt-20">

@@ -236,8 +236,8 @@ export function Hero() {
                   </span>
                 </Link>
               </Magnetic>
-              <button type="button" onClick={() => scrollToId("wobble")} className="draw-under inline-flex items-center gap-2 pb-0.5 text-[15px] font-medium">
-                Watch a verdict form
+              <button type="button" onClick={() => scrollToId("story")} className="draw-under inline-flex items-center gap-2 pb-0.5 text-[15px] font-medium">
+                See how it works
                 <Arrow direction="down" className="text-clay" />
               </button>
             </div>

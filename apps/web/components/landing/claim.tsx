@@ -26,15 +26,16 @@ function ClaimMachine() {
   const [typed, setTyped] = useState(0);
 
   const claim = CLAIMS[index];
-  const shown = reduce ? claim.text.length : typed;
+  const shown = typed;
   const done = shown >= claim.text.length;
 
+  // Reduced motion skips the typing. Decided after mount: the server can't know, and the first render must match it.
   useEffect(() => {
-    setTyped(0);
-  }, [index]);
+    setTyped(reduce ? CLAIMS[index].text.length : 0);
+  }, [index, reduce]);
 
   useEffect(() => {
-    if (!inView || done) return;
+    if (!inView || done || reduce) return;
     const timer = window.setTimeout(() => setTyped((count) => count + 1), 34);
     return () => window.clearTimeout(timer);
   }, [inView, typed, done]);
@@ -150,9 +151,8 @@ function ClaimMachine() {
 
 export function BeforeYouBuy() {
   return (
-    <section id="buy" className="theme-night relative overflow-hidden bg-paper py-24 text-ink md:py-36">
-      <div aria-hidden="true" className="absolute -right-40 top-20 h-[34rem] w-[34rem] rounded-full bg-clay/20 blur-[120px]" />
-      <div aria-hidden="true" className="absolute -left-40 bottom-0 h-[28rem] w-[28rem] rounded-full bg-sage/10 blur-[120px]" />
+    <section id="buy" className="relative overflow-hidden py-24 md:py-36">
+      <div aria-hidden="true" className="absolute -right-40 top-20 h-[34rem] w-[34rem] rounded-full bg-clay/10 blur-[120px]" />
       <div className={cx(WRAP, "relative")}>
         <SectionTag index="04" label="Before you buy" fig="Fig. 04" />
         <div className="mt-14 grid items-center gap-16 lg:mt-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">

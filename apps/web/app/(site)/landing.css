@@ -153,6 +153,48 @@ html:has(.landing) {
   }
 }
 
+/* ---------- Story stage: she breathes and blinks while you read ---------- */
+.st-breathe {
+  animation: st-breathe 4.5s ease-in-out infinite;
+}
+
+@keyframes st-breathe {
+  50% { transform: translateY(-2.5px); }
+}
+
+.st-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: st-blink 5.5s infinite;
+}
+
+@keyframes st-blink {
+  0%, 93%, 100% { transform: scaleY(1); }
+  95.5% { transform: scaleY(0.08); }
+}
+
+/* Reduced motion: no pin, one frame, every caption listed. */
+#story[data-static="true"] {
+  height: auto;
+}
+
+#story[data-static="true"] .st-caps {
+  min-height: 0;
+}
+
+#story[data-static="true"] .st-cap {
+  position: static;
+  margin-bottom: 1.5rem;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+#story[data-static="true"] .st-counter,
+#story[data-static="true"] .st-ticks {
+  display: none;
+}
+
 /* Link underline that draws from the left. */
 .draw-under {
   background-image: linear-gradient(currentColor, currentColor);
@@ -172,7 +214,9 @@ html:has(.landing) {
   .wobble-run,
   .scan-sweep,
   .spin-slow,
-  .caret {
+  .caret,
+  .st-breathe,
+  .st-blink {
     animation: none !important;
   }
 }

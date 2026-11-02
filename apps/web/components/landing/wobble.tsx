@@ -176,7 +176,7 @@ export function Wobble() {
             scrollTrigger: {
               trigger: root.current,
               start: "top top",
-              end: wide ? "+=3200" : "+=2400",
+              end: wide ? "+=2600" : "+=2000",
               pin: true,
               scrub: 0.7,
               anticipatePin: 1,
@@ -207,7 +207,7 @@ export function Wobble() {
     <section
       id="wobble"
       ref={root}
-      className="theme-night relative h-[100svh] min-h-[600px] overflow-hidden bg-paper text-ink"
+      className="relative h-[100svh] min-h-[600px] overflow-hidden bg-paper text-ink"
       aria-label="The wobble: how a verdict forms"
     >
       <div aria-hidden="true" className="dotgrid absolute inset-0 opacity-[0.35]" />
