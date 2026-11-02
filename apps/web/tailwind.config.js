@@ -30,6 +30,9 @@ module.exports = {
         serif: ["var(--font-serif)", "Georgia", "serif"],
         sans: ["var(--font-sans)", "Helvetica Neue", "Arial", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        // Landing page only: loaded by app/(site)/layout.tsx.
+        display: ["var(--font-display)", "Didot", "Georgia", "serif"],
+        lab: ["var(--font-lab)", "ui-monospace", "monospace"],
       },
       borderRadius: {
         "4xl": "2rem",

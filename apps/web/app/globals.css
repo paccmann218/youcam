@@ -72,6 +72,27 @@
   }
 }
 
+/* Always-dark band. Re-scopes the tokens, so every utility inside renders the night palette in both themes. */
+.theme-night {
+  color-scheme: dark;
+  --paper: 13 12 10;
+  --card: 24 21 18;
+  --elevated: 34 30 26;
+  --ink: 242 236 226;
+  --quiet: 160 151 140;
+  --line: 52 47 41;
+  --clay: 236 128 90;
+  --peach: 128 78 54;
+  --sage: 128 204 164;
+  --amber: 230 180 98;
+  --rose: 240 130 142;
+  --glow-a: 120 62 40;
+  --glow-b: 40 70 56;
+  --on-clay: 33 20 13;
+  --series-a: 210 116 80;
+  --series-b: 90 138 208;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;

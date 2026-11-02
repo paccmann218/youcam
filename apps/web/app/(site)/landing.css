@@ -1,0 +1,178 @@
+/* ------------------------------------------------------------------
+   Landing page only. Imported by app/(site)/layout.tsx.
+   ------------------------------------------------------------------ */
+
+/* GSAP pins and drives scroll; a CSS smooth-scroll fights its refresh. Anchor links scroll smoothly from JS instead. */
+html:has(.landing) {
+  scroll-behavior: auto;
+}
+
+.landing {
+  background: rgb(var(--paper));
+  color: rgb(var(--ink));
+  overflow-x: clip;
+}
+
+.landing .font-display {
+  font-optical-sizing: auto;
+}
+
+/* The lab label: every caption, index and spec reads like a printed sample tag. */
+.lab {
+  font-family: var(--font-lab), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 450;
+  letter-spacing: 0.14em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Outlined display numerals. */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(var(--ink) / 0.35);
+}
+
+/* ---------- Rubber stamp ---------- */
+.stamp {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.75em 1.15em 0.65em;
+  border: 0.2em solid currentColor;
+  border-radius: 0.45em;
+  outline: 0.08em solid currentColor;
+  outline-offset: -0.48em;
+  font-family: var(--font-lab), ui-monospace, monospace;
+  font-weight: 800;
+  font-stretch: 112%;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* worn ink: speckles knocked out of the print */
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3.4 2.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3.4 2.75'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  -webkit-mask-size: 220px;
+  mask-size: 220px;
+}
+
+.stamp-sub {
+  font-size: 0.48em;
+  font-weight: 500;
+  font-stretch: 100%;
+  letter-spacing: 0.18em;
+}
+
+/* ---------- Film grain over the whole page ---------- */
+.landing-grain {
+  pointer-events: none;
+  position: fixed;
+  inset: -50%;
+  z-index: 70;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+  animation: grain 0.9s steps(5) infinite;
+}
+
+:root[data-theme="dark"] .landing-grain {
+  mix-blend-mode: screen;
+  opacity: 0.035;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .landing-grain {
+    mix-blend-mode: screen;
+    opacity: 0.035;
+  }
+}
+
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-4%, 3%); }
+  40% { transform: translate(3%, -5%); }
+  60% { transform: translate(-6%, -2%); }
+  80% { transform: translate(5%, 4%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ---------- Small motion pieces ---------- */
+.wobble-run {
+  animation: wobble-run 22s linear infinite;
+}
+
+@keyframes wobble-run {
+  to { transform: translateX(-50%); }
+}
+
+.scan-sweep {
+  animation: scan-sweep 2.8s cubic-bezier(0.65, 0, 0.35, 1) infinite alternate;
+}
+
+@keyframes scan-sweep {
+  from { top: 8%; }
+  to { top: 90%; }
+}
+
+.spin-slow {
+  animation: spin-slow 28s linear infinite;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.caret {
+  animation: caret 1s steps(1) infinite;
+}
+
+@keyframes caret {
+  50% { opacity: 0; }
+}
+
+/* The wobble chart is drawn at about a third of its size on a phone: keep labels readable and strokes visible. */
+@media (max-width: 767.98px) {
+  .wb-chart svg text {
+    font-size: 28px;
+  }
+
+  .wb-chart svg path,
+  .wb-chart svg line {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .wb-note3,
+  .wb-note7 {
+    display: none;
+  }
+}
+
+/* Link underline that draws from the left. */
+.draw-under {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.draw-under:hover,
+.draw-under:focus-visible {
+  background-size: 100% 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-grain,
+  .wobble-run,
+  .scan-sweep,
+  .spin-slow,
+  .caret {
+    animation: none !important;
+  }
+}
