@@ -67,9 +67,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -118,7 +120,6 @@ private val Ink = Color(0xFF1C1814)
 private val Quiet = Color(0xFF6B6259)
 private val Line = Color(0xFFE5DCCE)
 private val Clay = Color(0xFFB25030)
-private val ClayLight = Color(0xFFE68864)
 
 /** Port 3000 on the phone is the laptop when `adb reverse tcp:3000 tcp:3000` is set over USB. */
 private const val USB_DESK = "http://127.0.0.1:3000"
@@ -288,6 +289,12 @@ class MainActivity : ComponentActivity() {
 
     private fun isDesk(uri: Uri): Boolean = uri.host == "localhost" || uri.host == "127.0.0.1"
 
+    /** Drops the connecting screen as soon as the desk paints, without waiting for every script to finish. */
+    private fun reveal(url: String) {
+        val current = origin ?: return
+        if (stage == Stage.Connecting && url.startsWith(current)) stage = Stage.Ready
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     private fun createDesk(): WebView {
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
@@ -314,10 +321,9 @@ class MainActivity : ComponentActivity() {
                     return true
                 }
 
-                override fun onPageFinished(view: WebView, url: String) {
-                    val current = origin ?: return
-                    if (stage == Stage.Connecting && url.startsWith(current)) stage = Stage.Ready
-                }
+                override fun onPageCommitVisible(view: WebView, url: String) = reveal(url)
+
+                override fun onPageFinished(view: WebView, url: String) = reveal(url)
 
                 override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
                     if (!request.isForMainFrame || !isDesk(request.url)) return
@@ -552,7 +558,7 @@ class MainActivity : ComponentActivity() {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Logo(34.dp)
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(12.dp))
                 Wordmark(24.sp)
             }
             Spacer(Modifier.height(40.dp))
@@ -625,19 +631,26 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** The WorthIt logo: an ink disc with a clay check, matching the launcher icon and the web wordmark. */
+/** The WorthIt W mark, drawn on the same 48-unit grid as LogoMark in apps/web/components/brand.tsx. */
 @Composable
 private fun Logo(size: Dp) {
     Canvas(Modifier.size(size)) {
-        drawCircle(Ink)
-        val scale = this.size.minDimension / 72f
-        fun at(x: Float, y: Float) = Offset((x - 18f) * scale, (y - 18f) * scale)
-        val check = Path().apply {
-            at(36f, 55.4f).let { moveTo(it.x, it.y) }
-            at(47.1f, 66.5f).let { lineTo(it.x, it.y) }
-            at(72f, 41.5f).let { lineTo(it.x, it.y) }
+        val u = this.size.minDimension / 48f
+        fun at(x: Float, y: Float) = Offset(x * u, y * u)
+        drawRoundRect(Ink, cornerRadius = CornerRadius(12f * u))
+        val dashes = PathEffect.dashPathEffect(floatArrayOf(2f * u, 2.2f * u))
+        for (y in floatArrayOf(21f, 32.5f)) {
+            drawLine(Paper.copy(alpha = 0.38f), at(6f, y), at(42f, y), strokeWidth = 1.1f * u, pathEffect = dashes)
         }
-        drawPath(check, ClayLight, style = Stroke(width = 7.5f * scale, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        val wobble = Path().apply {
+            at(10f, 18f).let { moveTo(it.x, it.y) }
+            at(16.6f, 35.5f).let { lineTo(it.x, it.y) }
+            at(24f, 25f).let { lineTo(it.x, it.y) }
+            at(31.4f, 35.5f).let { lineTo(it.x, it.y) }
+        }
+        drawPath(wobble, Paper, style = Stroke(width = 3.6f * u, cap = StrokeCap.Round, join = StrokeJoin.Miter, miter = 10f))
+        drawLine(Clay, at(31.4f, 35.5f), at(38f, 13.5f), strokeWidth = 3.6f * u, cap = StrokeCap.Round)
+        drawCircle(Clay, radius = 3.4f * u, center = at(38f, 13.5f))
     }
 }
 

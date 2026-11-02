@@ -11,8 +11,8 @@ android {
         applicationId = "com.proof.phonesync"
         minSdk = 28
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.0.0"
+        versionCode = 4
+        versionName = "1.0.1"
         val server = (project.findProperty("worthitServer") as String?) ?: "http://192.168.1.113:3000"
         buildConfigField("String", "SERVER_URL", "\"$server\"")
     }
