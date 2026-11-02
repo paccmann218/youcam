@@ -46,19 +46,11 @@ const CROSS_X = sx(18 + (MEAN + MDC - DAYS[17]) / (DAYS[18] - DAYS[17]));
 const CROSS_OFFSET = (CROSS_X - DX0) / (DX1 - DX0);
 
 const CAPTIONS = [
-  {
-    tag: "Baseline · 5 scans",
-    title: "Five scans, back to back.",
-    body: "Your skin can't change in two minutes, so the spread between them is the scan's own wobble. Every later change has to clear that band.",
-  },
-  { tag: "Day 3", title: "“It's working!”", body: "It isn't. Day 3 sits inside the wobble: the same as retaking the photo." },
-  {
-    tag: "Day 7",
-    title: "“It stopped working.”",
-    body: "Also inside the band. Also nothing. This is where most people quit a product nobody has judged yet.",
-  },
-  { tag: "Days 10–18", title: "Too early, and it says so.", body: "Every morning updates the earliest day an honest answer becomes possible." },
-  { tag: "Day 19", title: "Now it counts.", body: "The change clears your wobble and stays clear. Only then does WorthIt say worth it." },
+  { tag: "Baseline", title: "Five scans, back to back.", body: "Their spread is your normal wobble." },
+  { tag: "Day 3", title: "“It's working!”", body: "Inside the wobble. Doesn't count." },
+  { tag: "Day 7", title: "“It stopped working.”", body: "Still inside. Still nothing." },
+  { tag: "Days 10–18", title: "Too early.", body: "And it tells you so." },
+  { tag: "Day 19", title: "Now it counts.", body: "Clear of the wobble, and staying there." },
 ];
 
 /* Timeline (in timeline seconds): baseline + band, then 28 mornings, then a short hold on the verdict. */
@@ -220,7 +212,7 @@ export function Wobble() {
     >
       <div aria-hidden="true" className="dotgrid absolute inset-0 opacity-[0.35]" />
       <div className={cx(WRAP, "relative flex h-full flex-col pb-6 pt-20 md:pb-10 md:pt-24")}>
-        <SectionTag index="02" label="The wobble" fig="Fig. 02 · 28 mornings, one serum" />
+        <SectionTag index="02" label="The wobble" fig="Fig. 02 · illustrative" />
 
         <div className="mt-5 grid min-h-0 flex-1 gap-5 md:mt-8 md:grid-cols-[minmax(0,0.78fr)_minmax(0,2fr)] md:gap-10">
           {/* readout + story */}
@@ -244,7 +236,7 @@ export function Wobble() {
                 <span key={caption.tag} className="wb-tick h-[3px] flex-1 rounded-full bg-line transition-colors duration-300" />
               ))}
             </div>
-            <div className="relative mt-5 min-h-[9.5rem] flex-1 md:mt-8">
+            <div className="relative mt-5 min-h-[7.5rem] flex-1 md:mt-8">
               {CAPTIONS.map((caption, index) => (
                 <div key={caption.tag} className={cx("wb-caption absolute inset-x-0 top-0", index === 0 ? "" : "invisible opacity-0")}>
                   <p className="lab text-clay">{caption.tag}</p>
@@ -336,7 +328,7 @@ export function Wobble() {
             </div>
           </div>
         </div>
-        <p className="lab mt-4 hidden text-quiet md:block">Illustrative data. Your band comes from your own five baseline scans: MDC95 = 1.96 · √2 · SEM.</p>
+        <p className="lab mt-4 hidden text-quiet md:block">MDC95 = 1.96 · √2 · SEM</p>
       </div>
     </section>
   );

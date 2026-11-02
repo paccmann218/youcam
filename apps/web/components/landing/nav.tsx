@@ -10,10 +10,9 @@ import { Arrow, EASE_OUT, LandingMark, Magnetic, scrollToId } from "./kit";
 export const SECTIONS: { n: string; label: string; id: string }[] = [
   { n: "01", label: "The mirror", id: "mirror" },
   { n: "02", label: "The wobble", id: "wobble" },
-  { n: "03", label: "The method", id: "method" },
-  { n: "04", label: "The verdicts", id: "verdicts" },
-  { n: "05", label: "Before you buy", id: "buy" },
-  { n: "06", label: "The fine print", id: "fine-print" },
+  { n: "03", label: "The verdicts", id: "verdicts" },
+  { n: "04", label: "Before you buy", id: "buy" },
+  { n: "05", label: "The method", id: "method" },
 ];
 
 /** Hides while you read downward, returns the moment you scroll up. Section links appear once the cover is behind you. */

@@ -1,6 +1,5 @@
 import { BeforeYouBuy } from "@/components/landing/claim";
 import { Finale } from "@/components/landing/finale";
-import { FinePrint } from "@/components/landing/fine-print";
 import { Hero } from "@/components/landing/hero";
 import { Instruments } from "@/components/landing/instruments";
 import { MirrorSection } from "@/components/landing/mirror";
@@ -18,10 +17,9 @@ export default function LandingPage() {
         <Ticker />
         <MirrorSection />
         <Wobble />
-        <Instruments />
         <Verdicts />
         <BeforeYouBuy />
-        <FinePrint />
+        <Instruments />
       </main>
       <Finale />
     </>

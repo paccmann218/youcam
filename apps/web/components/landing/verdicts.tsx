@@ -14,7 +14,7 @@ const ROWS: Row[] = [
     word: "Worth it.",
     stamp: "Worth it",
     tone: "sage",
-    body: "Your skin changed by more than its normal wobble while you used it.",
+    body: "Changed by more than your normal wobble.",
     path: "M4 33 L24 30 L44 35 L64 31 L84 34 L104 29 L124 26 L144 20 L164 16 L184 12 L196 10",
   },
   {
@@ -23,7 +23,7 @@ const ROWS: Row[] = [
     word: "Not worth it.",
     stamp: "Not worth it",
     tone: "ink",
-    body: "No change beyond your normal wobble. You could stop paying for it.",
+    body: "Nothing beyond your wobble. Stop paying.",
     path: "M4 32 L24 29 L44 36 L64 31 L84 35 L104 30 L124 36 L144 31 L164 34 L184 29 L196 32",
   },
   {
@@ -32,7 +32,7 @@ const ROWS: Row[] = [
     word: "Too early.",
     stamp: "Too early",
     tone: "amber",
-    body: "Not enough mornings to tell yet, so it names the day an honest answer becomes possible.",
+    body: "Not enough mornings. It names the day it can know.",
     path: "M4 33 L24 29 L44 36 L64 30 L84 34",
     future: "M84 34 L196 34",
   },
@@ -42,7 +42,7 @@ const ROWS: Row[] = [
     word: "Making it worse.",
     stamp: "Wrong way",
     tone: "rose",
-    body: "Worse, beyond your wobble, on the days you used it. Reported as moving the wrong way, never as “no effect”.",
+    body: "Worse, beyond your wobble, on the days you used it.",
     path: "M4 31 L24 34 L44 29 L64 33 L84 35 L104 38 L124 42 L144 46 L164 49 L184 53 L196 56",
   },
 ];
@@ -113,17 +113,10 @@ export function Verdicts() {
   return (
     <section id="verdicts" className="relative py-24 md:py-36">
       <div className={WRAP}>
-        <SectionTag index="04" label="The verdicts" fig="Fig. 04 · the only four answers" />
-        <div className="mt-14 grid gap-10 lg:mt-20 lg:grid-cols-[1.4fr_1fr] lg:items-end">
-          <h2 className="font-display text-[clamp(2.6rem,5.4vw,5.6rem)] font-medium leading-[0.98] tracking-[-0.03em]">
-            <SplitWords text="It only ever says" /> <SplitWords text="one of four things." wordClassName="font-normal italic text-clay" delay={0.2} />
-          </h2>
-          <Reveal delay={0.15}>
-            <p className="max-w-md text-lg leading-relaxed text-quiet lg:justify-self-end">
-              No score out of 100, no glow index. One of four answers, with the reason behind it, and never before the numbers allow it.
-            </p>
-          </Reveal>
-        </div>
+        <SectionTag index="03" label="The verdicts" fig="Fig. 03" />
+        <h2 className="mt-14 font-display text-[clamp(2.6rem,5.4vw,5.6rem)] font-medium leading-[0.98] tracking-[-0.03em] lg:mt-20">
+          <SplitWords text="It only ever says" /> <SplitWords text="one of four things." wordClassName="font-normal italic text-clay" delay={0.2} />
+        </h2>
 
         <div ref={area} className="relative mt-16 md:mt-20" onPointerMove={onMove} onPointerLeave={() => setActive(null)}>
           <ol className="border-t border-line">
@@ -164,7 +157,7 @@ export function Verdicts() {
                     <span className="relative col-start-2 md:col-start-auto">
                       <MiniChart row={row} active={on} />
                     </span>
-                    <p className="relative col-start-2 leading-relaxed text-quiet md:col-start-auto">{row.body}</p>
+                    <p className="relative col-start-2 max-w-[17.5rem] leading-relaxed text-quiet md:col-start-auto">{row.body}</p>
                   </div>
                 </Reveal>
               );

@@ -18,12 +18,6 @@ import { TopoFace } from "./topo-face";
 
 const MIRROR_SAYS = ["Tired.", "Glowing!", "Fine, I guess.", "Blotchy.", "Worse than yesterday."];
 
-const FORCES = [
-  { key: "A", title: "Light", body: "Bathroom bulb, window, phone flash. A good skin day might just be good lighting." },
-  { key: "B", title: "Life", body: "A short night or a stressful week can move your skin more than any serum." },
-  { key: "C", title: "Hands", body: "You touch your face all day, and the newest product takes the blame." },
-];
-
 /** The face sits inset in the oval. Light positions are kept in face coordinates (0..1) and mapped out for the overlay. */
 const INSET = 0.08;
 
@@ -42,11 +36,6 @@ function Mirror() {
 
   const shade = useMotionTemplate`radial-gradient(110% 85% at ${ovalX} ${ovalY}, rgb(255 238 214 / 0.55), rgb(255 238 214 / 0.05) 42%, rgb(20 14 10 / 0.42) 100%)`;
   const litMask = useMotionTemplate`radial-gradient(circle at ${faceX} ${faceY}, #000 0%, #000 12%, transparent 44%)`;
-  const angle = useTransform(sx, (v) => {
-    const deg = Math.round((v - 0.5) * 140);
-    return `${deg < 0 ? "−" : deg > 0 ? "+" : "±"}${Math.abs(deg)}°`;
-  });
-
   const [bucket, setBucket] = useState(1);
   const [touched, setTouched] = useState(false);
 
@@ -111,12 +100,6 @@ function Mirror() {
       </div>
 
       <dl className="mt-14 border-y border-line text-sm">
-        <div className="grid grid-cols-[9rem_1fr] items-center gap-3 border-b border-line py-3">
-          <dt className="lab text-quiet">Light angle</dt>
-          <dd className="num font-lab text-base">
-            <motion.span>{angle}</motion.span>
-          </dd>
-        </div>
         <div className="grid min-h-[3.75rem] grid-cols-[9rem_1fr] items-center gap-3 border-b border-line py-3">
           <dt className="lab text-quiet">The mirror says</dt>
           <dd aria-live="polite" className="overflow-hidden">
@@ -142,9 +125,7 @@ function Mirror() {
           </dd>
         </div>
       </dl>
-      <figcaption className="lab mt-4 text-quiet">
-        Fig. 01 · {touched ? "Keep moving the light." : "Move your cursor over the mirror."} The mirror changes its mind. Your skin didn&apos;t.
-      </figcaption>
+      <figcaption className="lab mt-4 text-quiet">{touched ? "Same face. Different verdict." : "Move the light over the mirror"}</figcaption>
     </figure>
   );
 }
@@ -153,7 +134,7 @@ export function MirrorSection() {
   return (
     <section id="mirror" className="relative py-24 md:py-36">
       <div className={WRAP}>
-        <SectionTag index="01" label="The mirror" fig="Fig. 01 · same face, moving light" />
+        <SectionTag index="01" label="The mirror" fig="Fig. 01" />
         <div className="mt-14 grid items-center gap-20 lg:mt-24 lg:grid-cols-[1.05fr_.95fr] lg:gap-24">
           <div>
             <h2 className="font-display text-[clamp(2.6rem,5.4vw,5.6rem)] font-medium leading-[0.98] tracking-[-0.03em]">
@@ -161,20 +142,8 @@ export function MirrorSection() {
               <SplitWords text="every time the light moves." wordClassName="font-normal italic text-clay" delay={0.3} />
             </h2>
             <Reveal delay={0.15}>
-              <p className="mt-8 max-w-lg text-lg leading-relaxed text-quiet">
-                Same face, same morning, a different verdict at every angle. Skincare takes weeks to show, and most of us judge it in days, by eye. Three things
-                get in the way:
-              </p>
+              <p className="mt-8 max-w-md text-lg leading-relaxed text-quiet">The scan doesn&apos;t. Camera Kit refuses bad light, so every morning compares.</p>
             </Reveal>
-            <ol className="mt-12 border-t border-line">
-              {FORCES.map((force, index) => (
-                <Reveal key={force.key} as="li" delay={0.08 * index} className="grid grid-cols-[2rem_5.5rem_1fr] items-baseline gap-3 border-b border-line py-5 md:grid-cols-[3rem_8rem_1fr]">
-                  <span className="lab text-clay">{force.key}</span>
-                  <span className="font-display text-2xl italic md:text-3xl">{force.title}</span>
-                  <span className="leading-relaxed text-quiet">{force.body}</span>
-                </Reveal>
-              ))}
-            </ol>
           </div>
           <Mirror />
         </div>

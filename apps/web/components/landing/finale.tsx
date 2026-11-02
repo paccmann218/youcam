@@ -59,7 +59,7 @@ export function Finale() {
     <section className="theme-night relative overflow-hidden bg-paper text-ink">
       <div aria-hidden="true" className="absolute -left-32 top-24 h-[30rem] w-[30rem] rounded-full bg-clay/25 blur-[130px]" />
       <div className={cx(WRAP, "relative pb-16 pt-28 md:pt-40")}>
-        <SectionTag index="07" label="Start tonight" fig="Fig. 07" />
+        <SectionTag index="06" label="Start tonight" />
         <div className="mt-14 flex flex-col gap-12 md:mt-20 lg:flex-row lg:items-end lg:justify-between">
           <h2 className="font-display text-[clamp(3.6rem,11vw,11.5rem)] font-medium leading-[0.86] tracking-[-0.04em]">
             <SplitWords text="Stop paying" />
@@ -70,9 +70,7 @@ export function Finale() {
         </div>
 
         <div className="mt-16 grid gap-10 border-t border-line pt-10 md:grid-cols-[1fr_auto] md:items-center">
-          <p className="max-w-lg text-lg leading-relaxed text-quiet">
-            Five baseline scans. Your watch on overnight. Then one scan each morning, until the answer is honest.
-          </p>
+          <p className="max-w-lg text-lg leading-relaxed text-quiet">Five baseline scans, then one each morning.</p>
           <div className="flex flex-wrap items-center gap-3">
             <Magnetic>
               <Link
@@ -98,10 +96,9 @@ export function Finale() {
       </div>
 
       <footer className="relative">
-        <div className={cx(WRAP, "grid gap-8 border-t border-line py-10 text-sm leading-relaxed text-quiet md:grid-cols-3")}>
-          <p className="max-w-sm">WorthIt is a personal test. It is not medical care, and it never calls itself a clinical trial.</p>
-          <p className="max-w-sm">Built with the YouCam API: Skin Analysis, Skin Simulation, Makeup VTO, Facial Color Tones and Camera Kit.</p>
-          <nav aria-label="Footer" className="lab flex flex-wrap gap-x-6 gap-y-3 md:justify-end">
+        <div className={cx(WRAP, "flex flex-col gap-6 border-t border-line py-10 md:flex-row md:items-center md:justify-between")}>
+          <p className="lab text-quiet">A personal test, not medical care · Built with the YouCam API</p>
+          <nav aria-label="Footer" className="lab flex flex-wrap gap-x-6 gap-y-3">
             <Link href="/today" className="draw-under text-ink">
               Open the app
             </Link>

@@ -5,15 +5,14 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { cx } from "../ui/cx";
 import { Arrow, EASE_OUT, Magnetic, SplitWords, Stamp, WRAP, scrollToId, type Tone } from "./kit";
-import { SECTIONS } from "./nav";
 import { TopoFace } from "./topo-face";
 
-type Specimen = { no: string; product: string; concern: string; day: string; design: string; verdict: string; sub: string; tone: Tone };
+type Specimen = { no: string; product: string; concern: string; day: string; verdict: string; sub: string; tone: Tone };
 
 const SPECIMENS: Specimen[] = [
-  { no: "014", product: "Niacinamide serum", concern: "Pores", day: "21 of 28", design: "One side", verdict: "Worth it", sub: "Day 21", tone: "sage" },
-  { no: "027", product: "Vitamin C toner", concern: "Texture", day: "28 of 28", design: "Before / after", verdict: "Not worth it", sub: "Day 28", tone: "ink" },
-  { no: "031", product: "Retinol cream", concern: "Acne", day: "9 of 19", design: "Before / after", verdict: "Too early", sub: "Ask on day 19", tone: "amber" },
+  { no: "014", product: "Niacinamide serum", concern: "Pores", day: "21 of 28", verdict: "Worth it", sub: "Day 21", tone: "sage" },
+  { no: "027", product: "Vitamin C toner", concern: "Texture", day: "28 of 28", verdict: "Not worth it", sub: "Day 28", tone: "ink" },
+  { no: "031", product: "Retinol cream", concern: "Acne", day: "9 of 19", verdict: "Too early", sub: "Ask on day 19", tone: "amber" },
 ];
 
 /** Letters rise out of a mask with a slight tilt. */
@@ -103,8 +102,6 @@ function SpecimenTag() {
               <dd className="text-ink">{specimen.concern}</dd>
               <dt>Day</dt>
               <dd className="num text-ink">{specimen.day}</dd>
-              <dt>Design</dt>
-              <dd className="text-ink">{specimen.design}</dd>
             </dl>
           </motion.div>
         </AnimatePresence>
@@ -128,7 +125,7 @@ function SpecimenTag() {
           </AnimatePresence>
         </div>
       </div>
-      <figcaption className="lab mt-10 text-quiet">Example specimens. Real verdicts only appear once measured.</figcaption>
+      <figcaption className="lab mt-10 text-quiet">Example specimens</figcaption>
     </motion.figure>
   );
 }
@@ -175,8 +172,7 @@ function WobbleStrip() {
           </svg>
         ) : null}
         <div className={cx(WRAP, "lab pointer-events-none relative flex h-full items-center justify-between text-quiet")}>
-          <span className="-ml-2 rounded bg-paper/85 px-2">Normal wobble ±2.4 · inside the band nothing counts</span>
-          <span className="hidden rounded bg-paper/85 px-2 sm:inline">Live · illustrative</span>
+          <span className="-ml-2 rounded bg-paper/85 px-2">Your normal wobble</span>
         </div>
       </div>
     </motion.div>
@@ -194,9 +190,8 @@ export function Hero() {
           transition={{ duration: 1, delay: 0.1 }}
         >
           <span>Nº 001 · Specimen report</span>
-          <span className="text-right md:text-left">A personal test for skincare</span>
-          <span className="hidden md:block">Measured with YouCam AI</span>
-          <span className="hidden text-right md:block">Not medical care</span>
+          <span className="hidden md:col-span-2 md:block md:text-center">Measured with YouCam AI</span>
+          <span className="text-right">Not medical care</span>
         </motion.div>
         <motion.div
           aria-hidden="true"
@@ -206,7 +201,7 @@ export function Hero() {
           transition={{ duration: 1.8, ease: EASE_OUT, delay: 0.15 }}
         />
 
-        {/* left: headline + lede. right (lg): contents, then the specimen tag. "Worth it?" is sized to the left column (≈4.75em wide). */}
+        {/* left: headline + lede. right (lg): the specimen tag. "Worth it?" is sized to the left column (≈4.75em wide). */}
         <div className="mt-8 grid flex-1 gap-x-10 gap-y-14 pb-10 md:mt-10 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="flex min-w-0 flex-col">
             <h1 aria-label="Is your skincare actually worth it?" className="font-display tracking-[-0.035em]">
@@ -225,10 +220,9 @@ export function Hero() {
               </span>
             </h1>
 
-            <motion.div className="mt-10 max-w-2xl lg:mt-auto lg:pt-10" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE_OUT, delay: 1.05 }}>
+            <motion.div className="mt-10 max-w-xl lg:mt-auto lg:pt-10" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE_OUT, delay: 1.05 }}>
             <p className="text-lg leading-relaxed text-quiet md:text-xl">
-              You can&apos;t tell from the mirror, so you keep buying. WorthIt scans your skin every morning, reads your sleep and stress from your Galaxy Watch,
-              and gives a straight answer: <span className="text-ink">worth it, not worth it, or too early to tell.</span>
+              One scan a morning. A straight answer: <span className="text-ink">worth it, not worth it, or too early to tell.</span>
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
               <Magnetic>
@@ -250,26 +244,7 @@ export function Hero() {
             </motion.div>
           </div>
 
-          <div className="flex flex-col gap-12 lg:justify-between">
-            <motion.nav
-              aria-label="In this report"
-              className="hidden lg:block"
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1.1, ease: EASE_OUT, delay: 0.7 }}
-            >
-              <p className="lab text-quiet">In this report</p>
-              <ol className="mt-3 border-t border-line">
-                {SECTIONS.map((section) => (
-                  <li key={section.id} className="border-b border-line">
-                    <button type="button" onClick={() => scrollToId(section.id)} className="group flex w-full items-baseline gap-3 py-[6px] text-left">
-                      <span className="lab text-clay">{section.n}</span>
-                      <span className="font-display text-[1.05rem] italic transition-transform duration-300 group-hover:translate-x-1.5">{section.label}</span>
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            </motion.nav>
+          <div className="flex flex-col lg:justify-center lg:pb-16">
             <SpecimenTag />
           </div>
         </div>

@@ -48,8 +48,6 @@ const VERDICTS: [string, string][] = [
   ["Making it worse", "text-rose"],
 ];
 
-const SIGNALS = ["Acne", "Pores", "Redness", "Texture", "Sleep", "Stress", "Face touches", "Humidity", "Cycle"];
-
 export function Ticker() {
   const verdictRun = (
     <span className="flex items-center">
@@ -61,22 +59,9 @@ export function Ticker() {
       ))}
     </span>
   );
-  const signalRun = (
-    <span className="flex items-center">
-      {[...SIGNALS, ...SIGNALS].map((word, index) => (
-        <Fragment key={index}>
-          <span className="lab px-5 text-[12px] text-quiet md:px-8">{word}</span>
-          <span className="h-1 w-1 rounded-full bg-quiet/60" />
-        </Fragment>
-      ))}
-    </span>
-  );
   return (
-    <section aria-hidden="true" className="theme-night relative overflow-hidden border-y border-line bg-paper py-8 text-ink md:py-12">
+    <section aria-hidden="true" className="theme-night relative overflow-hidden border-y border-line bg-paper py-8 text-ink md:py-10">
       <VelocityRow speed={-1.4}>{verdictRun}</VelocityRow>
-      <VelocityRow speed={1.1} className="mt-5 md:mt-7">
-        {signalRun}
-      </VelocityRow>
     </section>
   );
 }
