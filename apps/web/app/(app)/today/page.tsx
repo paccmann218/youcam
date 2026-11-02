@@ -5,6 +5,7 @@ import { BRAND } from "@/components/brand";
 import { Icon } from "@/components/icons";
 import { ScanMini } from "@/components/illustrations/Mini";
 import { Watch } from "@/components/illustrations/Watch";
+import { PhoneSleepSync } from "@/components/phone-sleep";
 import { useProof } from "@/components/provider";
 import { SetupSteps, type SetupStep } from "@/components/setup-steps";
 import { PageTitle } from "@/components/shell";
@@ -200,6 +201,7 @@ export default function TodayPage() {
               <Metric icon="droplet" label="Humidity" value={view.humidity != null ? `${view.humidity.toFixed(0)}%` : null} />
             </div>
             {view.lastNight?.sleepHours == null ? <p className="mt-3 text-sm text-quiet">No sleep synced yet. The phone app sends it from Health Connect.</p> : null}
+            <PhoneSleepSync />
             <div className="mt-4 flex flex-wrap gap-2">
               <Check done={view.checkoffs.morning} label="Morning" />
               <Check done={view.checkoffs.evening} label="Used product" />
