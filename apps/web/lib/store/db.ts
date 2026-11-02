@@ -112,6 +112,39 @@ export type ColorProfile = {
   undertone: string | null;
 };
 
+/** A bag only remembers what was picked; prices always come from the catalogue when it is read. */
+export type BagLine = { productId: string; sku: string; qty: number };
+
+export type Bag = { userId: string; lines: BagLine[]; updatedAt: string };
+
+export type OrderLine = {
+  productId: string;
+  sku: string;
+  kind: "makeup" | "skincare";
+  brand: string;
+  name: string;
+  /** Shade name for makeup, pack size for skincare. */
+  variant: string;
+  color: string | null;
+  unitPrice: number;
+  qty: number;
+  lineTotal: number;
+};
+
+export type Order = {
+  id: string;
+  number: string;
+  userId: string;
+  createdAt: string;
+  lines: OrderLine[];
+  subtotal: number;
+  shipping: number;
+  total: number;
+  currency: string;
+  /** Demo store: an order is recorded, no payment is taken. */
+  status: "placed";
+};
+
 export type Db = {
   users: User[];
   scans: Scan[];
@@ -121,8 +154,10 @@ export type Db = {
   products: ProductNote[];
   nights: Night[];
   gestures: GestureLog[];
-  /** Added later; older ledgers do not have it. */
+  /** Added later; older ledgers do not have these. */
   profiles?: ColorProfile[];
+  bags?: Bag[];
+  orders?: Order[];
 };
 
 const empty = (): Db => ({
@@ -135,6 +170,8 @@ const empty = (): Db => ({
   nights: [],
   gestures: [],
   profiles: [],
+  bags: [],
+  orders: [],
 });
 
 function dbPath() {
@@ -213,6 +250,8 @@ export async function deleteUserEverywhere(userId: string) {
     db.nights = db.nights.filter((n) => n.userId !== userId);
     db.gestures = db.gestures.filter((g) => g.userId !== userId);
     db.profiles = (db.profiles ?? []).filter((item) => item.userId !== userId);
+    db.bags = (db.bags ?? []).filter((item) => item.userId !== userId);
+    db.orders = (db.orders ?? []).filter((item) => item.userId !== userId);
   });
   const client = supabase();
   if (!client) return;

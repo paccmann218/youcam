@@ -64,11 +64,20 @@ A pack photo is read only when `ANTHROPIC_API_KEY` is set. A barcode uses Open B
 
 ## Shop & try on
 
-`/shop` is a demo shelf of generic, unbranded products with no prices. In a real store the list comes from the retailer's catalogue.
+`/shop` is a seeded demo store: 10 products from four fictional brands, priced in INR, with a SKU per shade or size. Orders are recorded in the local ledger and no payment is taken. A retailer would serve its own catalogue from the same API.
 
 - **Colour profile.** YouCam AI Facial Color Tones Analyzer reads skin, lip, eye, brow and hair colours from the latest scan photo. Shades are ranked by CIELAB distance to the skin colour (foundation, concealer) or the natural lip colour (lip tint).
 - **Makeup try-on.** YouCam AI Makeup VTO applies foundation, concealer, lip colour or blush to the latest scan photo. One shade, or the whole basket in a single call, shown as a before/after slider.
 - **Skincare.** Each product runs the claim check above, and "Bought it? Test it" opens Protocol with the product filled in.
+- **Bag and checkout.** Any shade, the whole tried-on look, or a skincare product goes into a bag kept per account. Shipping is ₹79, free from ₹999. Placing the order empties the bag and returns an order number.
+
+| Endpoint | Does |
+| --- | --- |
+| `GET /api/shop/products?kind=makeup\|skincare` | Catalogue with brand, price, size, rating, shades and SKUs |
+| `GET /api/shop/bag` | Priced bag and the last five orders |
+| `POST /api/shop/bag` | `{productId, sku, qty}` or `{items: [...]}`. `qty` is a change, so `-1` removes one |
+| `DELETE /api/shop/bag` | Empties the bag |
+| `POST /api/shop/checkout` | Turns the bag into an order |
 
 ## YouCam APIs used
 
