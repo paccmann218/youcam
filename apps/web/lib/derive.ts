@@ -12,7 +12,7 @@ import {
   type Verdict,
 } from "./stats";
 import { PRIOR_DAILY_SD, PRIOR_STRENGTH_DAYS } from "./stats/constants";
-import type { Db, Night, Score, Trial, User } from "./store/db";
+import { isDemoId, type Db, type Night, type Score, type Trial, type User } from "./store/db";
 
 export function dayOf(iso: string, offsetMinutes: number): string {
   return new Date(new Date(iso).getTime() + offsetMinutes * 60_000).toISOString().slice(0, 10);
@@ -62,6 +62,8 @@ export type View = {
   gestures: { faceFace: number; faceOther: number; otherFace: number; otherOther: number };
   powerInput: { sigma: number; instrument: number; delta: number; mdc: number; baseline: number } | null;
   checkoffs: { morning: boolean; evening: boolean };
+  /** True while sample rows from /api/demo are in this account. */
+  demo: boolean;
 };
 
 function scoresFor(db: Db, scanId: string): Score[] {
@@ -203,8 +205,7 @@ export function buildView(db: Db, user: User, now = new Date()): View {
         };
       }),
     ];
-    const dailyMeans = points.map((point) => point.raw);
-    const spread = updateDailySpread(dailyMeans, PRIOR_DAILY_SD, PRIOR_STRENGTH_DAYS);
+    const spread = updateDailySpread(withinPhase(points), PRIOR_DAILY_SD, PRIOR_STRENGTH_DAYS);
     const sigma = observationSd(spread.sd, floor.sem);
     const fit = fitEffect(rows, sigma);
     verdict = verdictFromFit(fit, floor.mdc95);
@@ -308,7 +309,24 @@ export function buildView(db: Db, user: User, now = new Date()): View {
       morning: events.some((event) => event.type === "checkoff" && onDay(event.createdAt) === today && event.payload.slot === "morning"),
       evening: events.some((event) => event.type === "checkoff" && onDay(event.createdAt) === today && event.payload.slot === "evening"),
     },
+    demo: scans.some((scan) => isDemoId(scan.id)),
   };
+}
+
+/**
+ * Daily scores centred on their own phase (before the product, on the product), so the step a working
+ * product makes is not counted as day-to-day wobble. Scaled so the spread keeps n − 1 in its denominator
+ * after the phase means are taken out. A phase with one morning carries no spread and is left out.
+ */
+export function withinPhase(points: { raw: number; on: boolean }[]): number[] {
+  const phases = [points.filter((point) => !point.on), points.filter((point) => point.on)].filter((phase) => phase.length >= 2);
+  const n = phases.reduce((sum, phase) => sum + phase.length, 0);
+  if (n - phases.length < 2) return points.map((point) => point.raw);
+  const scale = Math.sqrt((n - 1) / (n - phases.length));
+  return phases.flatMap((phase) => {
+    const centre = mean(phase.map((point) => point.raw));
+    return phase.map((point) => (point.raw - centre) * scale);
+  });
 }
 
 function blankContext() {

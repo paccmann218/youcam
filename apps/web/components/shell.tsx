@@ -58,7 +58,7 @@ const TABS: NavItem[] = [
 ];
 
 function StatusChips() {
-  const { status } = useProof();
+  const { status, view } = useProof();
   if (!status) return null;
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -71,6 +71,13 @@ function StatusChips() {
       <StatusPill tone="ink" className="px-2.5 py-0.5 text-[11px]">
         store {status.supabase ? "supabase + local" : "local"}
       </StatusPill>
+      {view?.demo ? (
+        <Link href="/privacy#sample" title="Sample data is loaded. Manage it on the Privacy page.">
+          <StatusPill tone="amber" className="px-2.5 py-0.5 text-[11px]">
+            sample data
+          </StatusPill>
+        </Link>
+      ) : null}
     </div>
   );
 }

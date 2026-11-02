@@ -160,6 +160,13 @@ export type Db = {
   orders?: Order[];
 };
 
+/** Sample rows from /api/demo carry this id prefix, so they can be told apart and removed. */
+export const DEMO_PREFIX = "demo-";
+
+export function isDemoId(id: string | null | undefined): boolean {
+  return typeof id === "string" && id.startsWith(DEMO_PREFIX);
+}
+
 const empty = (): Db => ({
   users: [],
   scans: [],

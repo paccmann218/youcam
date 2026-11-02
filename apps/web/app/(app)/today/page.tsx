@@ -175,7 +175,10 @@ export default function TodayPage() {
               </ul>
             ) : (
               <Empty className="mt-6" art={<ScanMini className="h-20" />} title="No scans yet.">
-                Start with five quick scans in a row. They measure your normal wobble, so later changes mean something.
+                Start with five quick scans in a row. They measure your normal wobble, so later changes mean something.{" "}
+                <Link href="/privacy#sample" className="text-clay hover:underline">
+                  Just looking around? Load sample data.
+                </Link>
               </Empty>
             )}
           </Card>

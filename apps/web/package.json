@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "demo:seed": "node scripts/demo.mjs",
+    "demo:clear": "node scripts/demo.mjs --clear"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

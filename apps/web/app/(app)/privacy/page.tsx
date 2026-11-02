@@ -37,6 +37,8 @@ export default function PrivacyPage() {
 
       {view?.user.consentAt ? <p className="text-sm text-quiet">Consent recorded {view.user.consentAt}.</p> : null}
 
+      {view?.user.consentAt ? <SampleData loaded={view.demo} onChange={refresh} /> : null}
+
       <Card tone="rose" className="flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between md:p-8">
         <div>
           <p className="kicker text-rose">Danger zone</p>
@@ -61,5 +63,46 @@ export default function PrivacyPage() {
       </Card>
       {gone ? <Callout kind="success">Deleted.</Callout> : null}
     </main>
+  );
+}
+
+function SampleData({ loaded, onChange }: { loaded: boolean; onChange: () => Promise<void> }) {
+  const [busy, setBusy] = useState<"load" | "remove" | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+
+  async function run(action: "load" | "remove") {
+    setBusy(action);
+    setNote(null);
+    const res = await fetch("/api/demo", { method: action === "load" ? "POST" : "DELETE" });
+    const json = (await res.json().catch(() => ({}))) as { mornings?: number; faceTouches?: number; error?: string };
+    if (!res.ok) setNote(json.error ?? "That did not work.");
+    else setNote(action === "load" ? `Loaded ${json.mornings} mornings and ${json.faceTouches} watch touches, ending this morning.` : "Sample data removed.");
+    await onChange();
+    setBusy(null);
+  }
+
+  return (
+    <Card id="sample" className="scroll-mt-24 flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between md:p-8">
+      <div>
+        <p className="kicker text-amber">Sample data</p>
+        <h2 className="mt-2 font-serif text-2xl">{loaded ? "Sample data is loaded" : "Fill the app with four weeks of sample data"}</h2>
+        <p className="mt-1 max-w-xl text-sm leading-relaxed text-quiet">
+          Mornings, nights, watch touches, a light test and a niacinamide test, so every page has numbers to show. Your own scans and watch events stay. Load it again on the day of a demo so it ends that morning.
+        </p>
+        {note ? <p className="mt-3 text-sm" aria-live="polite">{note}</p> : null}
+      </div>
+      <div className="flex shrink-0 flex-wrap gap-2">
+        <Button variant="accent" disabled={busy != null} onClick={() => run("load")}>
+          <Icon name="sparkle" size={16} />
+          {busy === "load" ? "Loading…" : loaded ? "Reload sample data" : "Load sample data"}
+        </Button>
+        {loaded ? (
+          <Button variant="secondary" disabled={busy != null} onClick={() => run("remove")}>
+            <Icon name="trash" size={16} />
+            {busy === "remove" ? "Removing…" : "Remove"}
+          </Button>
+        ) : null}
+      </div>
+    </Card>
   );
 }

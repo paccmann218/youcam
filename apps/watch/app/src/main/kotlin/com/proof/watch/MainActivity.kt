@@ -1,6 +1,8 @@
 package com.proof.watch
 
+import android.Manifest
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -11,9 +13,11 @@ import android.os.Looper
 import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Base64
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -68,6 +72,8 @@ import com.proof.watch.ui.Label
 import com.proof.watch.ui.PageDots
 import com.proof.watch.ui.Sticker
 import com.proof.watch.ui.brutal
+import com.proof.watch.voice.VoicePlayer
+import com.proof.watch.voice.VoiceRecorder
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity(), SensorEventListener {
@@ -100,6 +106,26 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     /** null = checking, true = the laptop answered, false = it did not. */
     private var connected by mutableStateOf<Boolean?>(null)
 
+    // Spoken product log (USED PRODUCT). null = closed.
+    private var voicePhase by mutableStateOf<VoicePhase?>(null)
+    private var voiceSay by mutableStateOf("")
+    private var voiceHeard by mutableStateOf("")
+    private var voiceLevel by mutableStateOf(0f)
+    private var voiceStep = "start"
+    private var voiceProduct = ""
+    private var voiceIngredient = ""
+    /** Bumped on open and close, so replies from a closed conversation are dropped. */
+    private var voiceSession = 0
+    private var recorder: VoiceRecorder? = null
+    private val micPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            openVoice()
+        } else {
+            voicePhase = VoicePhase.ERROR
+            voiceSay = "Microphone permission is needed to talk. You can still log it without voice."
+        }
+    }
+
     private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { p, key ->
         when (key) {
             "touches", "touchDay" -> touchesToday = todayCount(p)
@@ -124,6 +150,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         morningDone = prefs.getString("morningDay", "") == today()
         eveningDone = prefs.getString("eveningDay", "") == today()
         prefs.registerOnSharedPreferenceChangeListener(prefsListener)
+        ProofApi.useWifi(this)
         // Keep the screen awake while WorthIt is open, so the counter stays visible during a demo.
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // Older builds needed a separate FINISH tap; finish now if the examples are already there.
@@ -140,9 +167,10 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         // No pairing: sync with the laptop as soon as the app opens.
         LaunchedEffect(Unit) { pullVerdict() }
         BackHandler(enabled = capturing != null) { cancelCapture() }
+        BackHandler(enabled = voicePhase != null) { closeVoice() }
         MaterialTheme {
             Box(Modifier.fillMaxSize().background(Brutal.Ink)) {
-                HorizontalPager(state = pager, modifier = Modifier.fillMaxSize(), userScrollEnabled = capturing == null) { page ->
+                HorizontalPager(state = pager, modifier = Modifier.fillMaxSize(), userScrollEnabled = capturing == null && voicePhase == null) { page ->
                     when (page) {
                         0 -> HandsPage()
                         1 -> RoutinePage()
@@ -153,6 +181,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 TimeText(timeTextStyle = TextStyle(color = Brutal.Ink, fontSize = 12.sp, fontWeight = FontWeight.Black))
                 PageDots(count = 4, current = pager.currentPage, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 7.dp))
                 capturing?.let { CaptureOverlay(it) }
+                voicePhase?.let { VoiceOverlay(it) }
             }
         }
     }
@@ -218,10 +247,10 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         BrutalButton(
             text = if (eveningDone) "✓ USED PRODUCT" else "USED PRODUCT",
             color = if (eveningDone) Brutal.White else Brutal.Pink,
-            emoji = if (eveningDone) null else "🧴",
+            emoji = if (eveningDone) null else "🎤",
             modifier = Modifier.fillMaxWidth(),
-        ) { checkoff("evening") }
-        Text("Shows up on your laptop instantly", color = Brutal.Ink, fontSize = 10.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+        ) { openVoice() }
+        Text("Tap and say what you used", color = Brutal.Ink, fontSize = 10.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
     }
 
     /* ------------------------------------------------------------------ page 3: verdict */
@@ -355,6 +384,66 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                     )
                 }
                 BrutalButton("CANCEL", Brutal.White, small = true) { cancelCapture() }
+            }
+        }
+    }
+
+    /* ------------------------------------------------------------------ spoken product log overlay */
+
+    @Composable
+    private fun VoiceOverlay(phase: VoicePhase) {
+        val fill = when (phase) {
+            VoicePhase.LISTENING -> Brutal.Yellow
+            VoicePhase.SAVED -> Brutal.Mint
+            VoicePhase.ERROR -> Brutal.White
+            else -> Brutal.Pink
+        }
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(fill)
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {},
+        ) {
+            val viewport = maxHeight
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().heightIn(min = viewport).padding(horizontal = 24.dp, vertical = 26.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
+                ) {
+                    Sticker(
+                        when (phase) {
+                            VoicePhase.THINKING -> "… THINKING"
+                            VoicePhase.SPEAKING -> "🔊 SPEAKING"
+                            VoicePhase.LISTENING -> "● YOUR TURN"
+                            VoicePhase.SAVED -> "✓ LOGGED"
+                            VoicePhase.ERROR -> "VOICE LOG"
+                        },
+                        textColor = fill,
+                    )
+                    Text(voiceSay, color = Brutal.Ink, fontSize = 13.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
+                    if (voiceHeard.isNotBlank() && phase != VoicePhase.ERROR) {
+                        Text("You: “$voiceHeard”", color = Brutal.Ink, fontSize = 10.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                    }
+                    if (phase == VoicePhase.LISTENING) {
+                        Box(Modifier.fillMaxWidth().height(10.dp).brutal(Brutal.White, Brutal.Pill, shadow = 0.dp)) {
+                            Box(Modifier.fillMaxWidth(0.06f + 0.94f * voiceLevel).fillMaxHeight().background(Brutal.Ink, Brutal.Pill))
+                        }
+                    }
+                    when (phase) {
+                        VoicePhase.LISTENING -> BrutalButton("DONE", Brutal.Mint, emoji = "✓", small = true) { recorder?.stop() }
+                        VoicePhase.SPEAKING -> BrutalButton("SKIP", Brutal.White, emoji = "⏭", small = true) { VoicePlayer.finish() }
+                        VoicePhase.ERROR -> {
+                            BrutalButton("TRY AGAIN", Brutal.Yellow, emoji = "🎤", small = true) { openVoice() }
+                            BrutalButton("JUST LOG IT", Brutal.Mint, small = true) {
+                                checkoff("evening")
+                                closeVoice()
+                            }
+                        }
+                        else -> Unit
+                    }
+                    BrutalButton(if (phase == VoicePhase.SAVED) "CLOSE" else "CANCEL", Brutal.White, small = true) { closeVoice() }
+                }
             }
         }
     }
@@ -575,6 +664,92 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         if (slot == "morning") morningDone = true else eveningDone = true
     }
 
+    /**
+     * USED PRODUCT as a conversation: the laptop asks (Sarvam speech), the watch records the answer,
+     * the laptop transcribes it and asks the next question, until the product, its ingredient and the
+     * start day are known. The laptop then saves the test and tonight's use.
+     */
+    private fun openVoice() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            micPermission.launch(Manifest.permission.RECORD_AUDIO)
+            return
+        }
+        voiceSession++
+        voiceStep = "start"
+        voiceProduct = ""
+        voiceIngredient = ""
+        voiceHeard = ""
+        voiceSay = "Connecting to your laptop…"
+        // Talking into the watch lifts the wrist to the face; that is not a face touch.
+        HandsService.paused = true
+        voiceTurn(null)
+    }
+
+    private fun voiceTurn(clip: ByteArray?) {
+        val session = voiceSession
+        voicePhase = VoicePhase.THINKING
+        Thread {
+            val reply = ProofApi.voice(voiceStep, voiceProduct, voiceIngredient, clip)
+            runOnUiThread {
+                if (session != voiceSession) return@runOnUiThread
+                if (reply == null || reply.has("error")) {
+                    voicePhase = VoicePhase.ERROR
+                    voiceSay = reply?.optString("error") ?: "Couldn't reach the laptop. Same Wi-Fi, and the web app running?"
+                    return@runOnUiThread
+                }
+                voiceStep = reply.optString("next", "done")
+                reply.optString("product").takeIf { it.isNotBlank() }?.let { voiceProduct = it }
+                reply.optString("ingredient").takeIf { it.isNotBlank() }?.let { voiceIngredient = it }
+                voiceHeard = reply.optString("heard")
+                voiceSay = reply.optString("say")
+                val done = voiceStep == "done"
+                if (done) {
+                    prefs.edit().putString("eveningDay", today()).apply()
+                    eveningDone = true
+                    vibrate(longArrayOf(0, 60, 80, 60))
+                    pullVerdict()
+                }
+                voicePhase = if (done) VoicePhase.SAVED else VoicePhase.SPEAKING
+                val speech = if (reply.isNull("audio")) null else reply.optString("audio").takeIf { it.isNotBlank() }
+                val next: () -> Unit = {
+                    if (session == voiceSession) {
+                        if (done) handler.postDelayed({ if (session == voiceSession) closeVoice() }, 3000) else listenForAnswer(session)
+                    }
+                }
+                if (speech != null) VoicePlayer.play(this, Base64.decode(speech, Base64.DEFAULT), next) else next()
+            }
+        }.start()
+    }
+
+    private fun listenForAnswer(session: Int) {
+        voicePhase = VoicePhase.LISTENING
+        voiceLevel = 0f
+        vibrate(longArrayOf(0, 40))
+        val rec = VoiceRecorder().also { recorder = it }
+        Thread {
+            val clip = rec.record { level -> runOnUiThread { voiceLevel = level } }
+            runOnUiThread {
+                if (session != voiceSession) return@runOnUiThread
+                recorder = null
+                if (clip == null) {
+                    voicePhase = VoicePhase.ERROR
+                    voiceSay = "The microphone is busy or unavailable."
+                } else {
+                    voiceTurn(clip)
+                }
+            }
+        }.start()
+    }
+
+    private fun closeVoice() {
+        voiceSession++
+        recorder?.stop()
+        recorder = null
+        VoicePlayer.stop()
+        voicePhase = null
+        HandsService.paused = false
+    }
+
     private fun refreshTile() {
         try {
             TileService.getUpdater(this).requestUpdate(TrialTileService::class.java)
@@ -593,6 +768,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     }
 
     override fun onDestroy() {
+        recorder?.stop()
+        VoicePlayer.stop()
         handler.removeCallbacksAndMessages(null)
         prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
         sensors.unregisterListener(this)
@@ -615,6 +792,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
     }
 }
+
+private enum class VoicePhase { THINKING, SPEAKING, LISTENING, SAVED, ERROR }
 
 /** The guided recordings: how long they run and what the screen says. */
 private enum class Capture(

@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { readDb, updateDb, type Db, type User } from "./store/db";
+import { isDemoId, readDb, updateDb, type Db, type User } from "./store/db";
 
 export async function userFromCookie(): Promise<User | null> {
   const jar = await cookies();
@@ -39,9 +39,10 @@ export function activeUser(db: Db): User | null {
   for (const user of db.users) {
     if (!user.consentAt) continue;
     let at = user.consentAt > user.createdAt ? user.consentAt : user.createdAt;
-    for (const scan of db.scans) if (scan.userId === user.id && scan.createdAt > at) at = scan.createdAt;
-    for (const event of db.events) if (event.userId === user.id && event.createdAt > at) at = event.createdAt;
-    for (const trial of db.trials) if (trial.userId === user.id && trial.createdAt > at) at = trial.createdAt;
+    // Sample rows are not activity, so loading them never moves the watch to another account.
+    for (const scan of db.scans) if (scan.userId === user.id && !isDemoId(scan.id) && scan.createdAt > at) at = scan.createdAt;
+    for (const event of db.events) if (event.userId === user.id && !isDemoId(event.id) && event.createdAt > at) at = event.createdAt;
+    for (const trial of db.trials) if (trial.userId === user.id && !isDemoId(trial.id) && trial.createdAt > at) at = trial.createdAt;
     if (at > bestAt) {
       best = user;
       bestAt = at;

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/callout";
 import { Card } from "@/components/ui/card";
 import { Empty } from "@/components/ui/empty";
+import { concernLabel } from "@/lib/stats/model";
 
 function iconFor(name: string): IconName {
   if (name.includes("sleep")) return "bed";
@@ -81,9 +82,9 @@ export default function BreakoutPage() {
             {ranked.map((item, index) => (
               <li key={item.name} className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 sm:grid-cols-[auto_10rem_1fr_auto]">
                 <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${index === 0 ? "bg-clay/15 text-clay" : "bg-ink/5 text-quiet"}`}>
-                  <Icon name={iconFor(item.name)} size={18} />
+                  <Icon name={iconFor(concernLabel(item.name))} size={18} />
                 </span>
-                <span className="font-medium capitalize">{item.name}</span>
+                <span className="font-medium first-letter:uppercase">{concernLabel(item.name)}</span>
                 <span className="col-span-2 h-3 rounded-full bg-line/60 sm:col-span-1">
                   <span
                     className={`block h-full rounded-full ${index === 0 ? "bg-clay" : "bg-ink/35"}`}
