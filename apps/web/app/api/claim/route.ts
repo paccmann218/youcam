@@ -10,6 +10,7 @@ import { buildView } from "@/lib/derive";
 import { download, findImageUrl, hashBytes, runTask, simulationKey, uploadImage } from "@/lib/youcam/client";
 import { saveImage, scoreImage } from "@/lib/youcam/analyze";
 import { YouCamError } from "@/lib/youcam/client";
+import { latestFace } from "@/lib/youcam/profile";
 
 export const dynamic = "force-dynamic";
 
@@ -54,13 +55,13 @@ export async function POST(request: Request) {
   const simKey = simulationKey(concern);
   const db = await readDb();
   const view = buildView(db, user);
-  const floor = view.noise.find((item) => item.concern === concern) ?? view.noise[0];
-  const face = [...db.scans].reverse().find((scan) => scan.userId === user.id && scan.imageFile && scan.purpose !== "claim");
-  if (!face?.imageFile || !floor) {
-    return json({ error: "Measure a noise floor and keep one face scan before checking a claim." }, 400);
+  const floor = view.noise.find((item) => item.concern === concern) ?? view.noise[0] ?? null;
+  const face = latestFace(db, user.id);
+  if (!face?.imageFile) {
+    return json({ error: "Add a face photo on Shop & try on, or take a scan, before checking a claim." }, 400);
   }
-  const original = db.scores.find((score) => score.scanId === face.id && score.concern === (floor.concern));
-  if (!original) return json({ error: "The last face scan has no score for that concern." }, 400);
+  const original = db.scores.find((score) => score.scanId === face.id && score.concern === (floor?.concern ?? concern));
+  if (!original) return json({ error: "This face photo has no score for that concern. Upload it again from Shop so WorthIt can measure it." }, 400);
 
   const intensity = intensityForClaim(claimText);
   let measuredDelta: number | null = null;
@@ -90,16 +91,20 @@ export async function POST(request: Request) {
     }
   }
 
-  const decision = measuredDelta == null ? "unmeasured" : measuredDelta < floor.mdc95 ? "skip" : "test";
+  const mdc = floor?.mdc95 ?? null;
+  const decision = measuredDelta == null || mdc == null ? "unmeasured" : measuredDelta < mdc ? "skip" : "test";
+  const moved = measuredDelta == null ? "" : `${measuredDelta >= 0 ? "+" : ""}${measuredDelta.toFixed(1)}`;
   const fallback =
     measuredDelta == null
       ? "The claim could not be re-measured on your face. No SKIP or TEST IT until it can."
-      : decision === "skip"
-        ? `Even if this is true, you couldn't see it. The render moved ${original.concern} by ${measuredDelta >= 0 ? "+" : ""}${measuredDelta.toFixed(1)} raw points. Your noise is ${floor.mdc95.toFixed(1)}.`
-        : `The render moved ${original.concern} by +${measuredDelta.toFixed(1)} raw points, past your noise of ${floor.mdc95.toFixed(1)}. Worth a personal test. Not a result.`;
+      : mdc == null
+        ? `The render moved ${original.concern} by ${moved} raw points. SKIP or TEST IT waits until five baseline scans measure your normal wobble.`
+        : decision === "skip"
+          ? `Even if this is true, you couldn't see it. The render moved ${original.concern} by ${moved} raw points. Your noise is ${mdc.toFixed(1)}.`
+          : `The render moved ${original.concern} by ${moved} raw points, past your noise of ${mdc.toFixed(1)}. Worth a personal test. Not a result.`;
   const spoken = await phrase(
     "claim",
-    `Claim: ${claimText}\nConcern: ${original.concern}\nRequested simulation intensity: ${intensity}\nMeasured raw change: ${measuredDelta}\nNoise MDC95: ${floor.mdc95}\nDecision: ${decision}`,
+    `Claim: ${claimText}\nConcern: ${original.concern}\nRequested simulation intensity: ${intensity}\nMeasured raw change: ${measuredDelta}\nNoise MDC95: ${mdc}\nDecision: ${decision}`,
     fallback,
   );
   const note: ProductNote = {
@@ -112,7 +117,7 @@ export async function POST(request: Request) {
     barcode: barcode || null,
     requestedIntensity: simKey ? intensity : null,
     measuredDelta,
-    mdc: floor.mdc95,
+    mdc,
     decision,
     renderFile,
   };

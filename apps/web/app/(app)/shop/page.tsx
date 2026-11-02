@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { FaceUpload } from "@/components/face-upload";
 import { Icon } from "@/components/icons";
 import { Face } from "@/components/illustrations/Face";
 import { useProof } from "@/components/provider";
@@ -82,15 +83,7 @@ export default function ShopPage() {
 
       <Callout kind="info">Demo shelf: generic products with no brands or prices. In a real store, this list comes from the retailer&apos;s catalogue.</Callout>
 
-      {!faceImage ? (
-        <Callout kind="warn">
-          Try-ons and claim checks use your latest scan photo.{" "}
-          <Link href="/scan" className="font-medium text-clay underline">
-            Take a scan first
-          </Link>
-          .
-        </Callout>
-      ) : null}
+      <FaceUpload image={faceImage} onDone={load} />
 
       {/* colour profile */}
       <Card className="grid items-center gap-6 p-6 md:grid-cols-[auto_1fr_auto] md:p-8">
@@ -176,6 +169,7 @@ export default function ShopPage() {
                 <SkincareCard
                   key={product.id}
                   product={product}
+                  hasFace={Boolean(faceImage)}
                   past={[...past].reverse().find((item) => item.name === product.name) ?? null}
                   verdict={sameActive(product.active, view?.trial?.active) ? view?.verdict?.kind ?? null : null}
                   onChecked={async () => {
@@ -344,17 +338,19 @@ function MakeupCard({
 
 function SkincareCard({
   product,
+  hasFace,
   past,
   verdict,
   onChecked,
 }: {
   product: SkincareProduct;
+  hasFace: boolean;
   past: PastCheck | null;
   verdict: string | null;
   onChecked: () => Promise<void>;
 }) {
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ line?: string; decision?: string | null; error?: string | null } | null>(null);
+  const [result, setResult] = useState<{ line?: string; decision?: string | null; renderFile?: string | null; error?: string | null } | null>(null);
   const decision = result?.decision ?? past?.decision ?? null;
   const protocolHref = `/protocol?product=${encodeURIComponent(product.name)}&active=${encodeURIComponent(product.active)}&concern=${product.concern}`;
 
@@ -365,8 +361,13 @@ function SkincareCard({
     form.set("name", product.name);
     form.set("concern", product.concern);
     const res = await fetch("/api/claim", { method: "POST", body: form });
-    const json = (await res.json()) as { line?: string; note?: { decision: string | null }; error?: string | null };
-    setResult({ line: json.line, decision: json.note?.decision ?? null, error: !res.ok || json.error ? json.error ?? "The claim could not be checked." : null });
+    const json = (await res.json()) as { line?: string; note?: { decision: string | null; renderFile: string | null }; error?: string | null };
+    setResult({
+      line: json.line,
+      decision: json.note?.decision ?? null,
+      renderFile: json.note?.renderFile ?? null,
+      error: !res.ok || json.error ? json.error ?? "The claim could not be checked." : null,
+    });
     setBusy(false);
     if (res.ok) await onChecked();
   }
@@ -391,9 +392,20 @@ function SkincareCard({
         </p>
       ) : null}
 
-      {decision === "skip" || decision === "test" ? (
-        <div className={cx("mt-3 rounded-2xl border px-4 py-3", decision === "skip" ? "border-rose/30 bg-rose/[0.06]" : "border-sage/30 bg-sage/[0.06]")}>
-          <p className={cx("font-mono text-xs font-semibold tracking-wider", decision === "skip" ? "text-rose" : "text-sage")}>{decision === "skip" ? "SKIP" : "TEST IT"}</p>
+      {result?.renderFile ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`/api/images/${result.renderFile}`} alt="Claim rendered on your photo" className="mt-3 w-full rounded-2xl border border-line" />
+      ) : null}
+      {decision === "skip" || decision === "test" || decision === "unmeasured" ? (
+        <div
+          className={cx(
+            "mt-3 rounded-2xl border px-4 py-3",
+            decision === "skip" ? "border-rose/30 bg-rose/[0.06]" : decision === "test" ? "border-sage/30 bg-sage/[0.06]" : "border-line bg-paper/60",
+          )}
+        >
+          <p className={cx("font-mono text-xs font-semibold tracking-wider", decision === "skip" ? "text-rose" : decision === "test" ? "text-sage" : "text-quiet")}>
+            {decision === "skip" ? "SKIP" : decision === "test" ? "TEST IT" : "NOT MEASURED YET"}
+          </p>
           <p className="mt-1 text-sm leading-relaxed text-ink/85">
             {result?.line ??
               (past?.measuredDelta != null && past.mdc != null
@@ -405,7 +417,7 @@ function SkincareCard({
       {result?.error ? <Callout kind="warn" className="mt-3">{result.error}</Callout> : null}
 
       <div className="mt-auto grid gap-2 pt-5">
-        <Button variant="secondary" size="sm" className="w-full" disabled={busy} onClick={check}>
+        <Button variant="secondary" size="sm" className="w-full" disabled={busy || !hasFace} onClick={check}>
           <Icon name="sparkle" size={15} />
           {busy ? "Rendering and measuring…" : decision ? "Check again" : "Check on my face"}
         </Button>

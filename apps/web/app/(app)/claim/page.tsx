@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FaceUpload } from "@/components/face-upload";
 import { Icon } from "@/components/icons";
 import { ClaimMini } from "@/components/illustrations/Mini";
 import { Watch } from "@/components/illustrations/Watch";
@@ -18,6 +19,18 @@ export default function ClaimPage() {
   const [result, setResult] = useState<{ line?: string; note?: { decision: string | null; renderFile: string | null; measuredDelta: number | null }; error?: string | null } | null>(null);
   const [busy, setBusy] = useState(false);
   const [photoName, setPhotoName] = useState<string | null>(null);
+  const [faceImage, setFaceImage] = useState<string | null>(null);
+
+  async function loadFace() {
+    const res = await fetch("/api/profile", { cache: "no-store" });
+    if (!res.ok) return;
+    const json = (await res.json()) as { faceImage: string | null };
+    setFaceImage(json.faceImage);
+  }
+
+  useEffect(() => {
+    void loadFace();
+  }, []);
 
   const decision = result?.note?.decision ?? null;
   const isTest = decision === "test";
@@ -27,6 +40,8 @@ export default function ClaimPage() {
       <PageTitle kicker="Before you buy" icon="claim" title="Check a claim before you pay.">
         Type what the label promises. YouCam Skin Simulation renders that change on your face, then Skin Analysis measures it. If the change is smaller than your normal wobble, you would never see it, so skip it.
       </PageTitle>
+
+      <FaceUpload image={faceImage} onDone={loadFace} />
 
       <section className="grid gap-5 lg:grid-cols-[1fr_1fr]">
         <Card className="p-6 md:p-8">

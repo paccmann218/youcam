@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as { cheekHex?: string };
   const db = await readDb();
   const face = [...db.scans].reverse().find((scan) => scan.userId === user.id && scan.imageFile && scan.purpose !== "claim");
-  if (!face?.imageFile) return json({ error: "Take a face scan first." }, 400);
+  if (!face?.imageFile) return json({ error: "Add a face photo on Shop & try on first." }, 400);
   const bytes = await readFile(path.join(process.cwd(), ".data", "images", face.imageFile));
   try {
     const uploaded = await uploadImage(bytes, "image/jpeg", face.imageFile);

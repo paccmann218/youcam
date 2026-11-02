@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
   const db = await readDb();
   const face = latestFace(db, user.id);
-  if (!face?.imageFile) return json({ error: "Take a face scan first. Try-ons use your latest scan photo." }, 400);
+  if (!face?.imageFile) return json({ error: "Add a face photo on this page first. Try-ons use that picture." }, 400);
 
   try {
     const bytes = await faceBytes(face);

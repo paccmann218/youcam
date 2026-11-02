@@ -100,6 +100,71 @@ export async function analyzeFace(args: {
   return { scan, scores };
 }
 
+/** A shop photo. It is the face for try-on and colour matching, and it is not a trial morning. */
+export async function savePortrait(args: {
+  userId: string;
+  bytes: Buffer;
+  contentType: string;
+  mode: "sd" | "hd";
+}): Promise<{ scan: Scan; scores: Score[]; imageFile: string; scoreError: string | null }> {
+  const scanId = randomUUID();
+  const imageFile = await saveImage(scanId, args.bytes);
+  const scores: Score[] = [];
+  let scoreError: string | null = null;
+  let latencyMs = 0;
+  let cached = false;
+  let taskId = "portrait";
+  try {
+    const { scores: parsed, task } = await scoreImage(args.bytes, args.contentType, args.mode);
+    latencyMs = task.latencyMs;
+    cached = task.cached;
+    taskId = task.taskId;
+    for (const score of parsed) {
+      let maskFile: string | null = null;
+      if (score.maskUrl) {
+        try {
+          maskFile = await saveImage(`${scanId}-${score.concern}`, await download(score.maskUrl));
+        } catch {
+          maskFile = null;
+        }
+      }
+      scores.push({
+        id: randomUUID(),
+        scanId,
+        userId: args.userId,
+        concern: score.concern,
+        raw: score.raw,
+        ui: score.ui,
+        region: score.region,
+        maskFile,
+        left: null,
+        right: null,
+      });
+    }
+  } catch (error) {
+    scoreError = error instanceof Error ? error.message : "YouCam could not score this photo.";
+  }
+  const scan: Scan = {
+    id: scanId,
+    userId: args.userId,
+    createdAt: new Date().toISOString(),
+    purpose: "portrait",
+    mode: args.mode,
+    gated: false,
+    lightLabel: null,
+    groupId: null,
+    latencyMs,
+    cached,
+    taskId,
+    imageFile,
+  };
+  await updateDb((db) => {
+    db.scans.push(scan);
+    db.scores.push(...scores);
+  });
+  return { scan, scores, imageFile, scoreError };
+}
+
 export function primaryScores(scores: ConcernScore[] | Score[]) {
   return scores;
 }

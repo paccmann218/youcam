@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FaceUpload } from "@/components/face-upload";
 import { Icon } from "@/components/icons";
 import { Face } from "@/components/illustrations/Face";
 import { PageTitle } from "@/components/shell";
@@ -12,6 +13,19 @@ import { StatusPill } from "@/components/ui/status";
 export default function ConcealerPage() {
   const [result, setResult] = useState<{ color?: string; toneSource?: string; previewUrl?: string; note?: string; error?: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [faceImage, setFaceImage] = useState<string | null>(null);
+
+  async function loadFace() {
+    const res = await fetch("/api/profile", { cache: "no-store" });
+    if (!res.ok) return;
+    const json = (await res.json()) as { faceImage: string | null };
+    setFaceImage(json.faceImage);
+  }
+
+  useEffect(() => {
+    void loadFace();
+  }, []);
+
   return (
     <main className="space-y-8">
       <PageTitle
@@ -22,7 +36,7 @@ export default function ConcealerPage() {
           <Button
             variant="accent"
             size="lg"
-            disabled={busy}
+            disabled={busy || !faceImage}
             onClick={async () => {
               setBusy(true);
               const res = await fetch("/api/concealer", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
@@ -35,8 +49,10 @@ export default function ConcealerPage() {
           </Button>
         }
       >
-        WorthIt reads your skin tone with YouCam and tries a matching concealer on your latest scan photo with Makeup VTO. It is cosmetic only and does not touch your test.
+        WorthIt reads your skin tone with YouCam and tries a matching concealer on your face photo with Makeup VTO. It is cosmetic only and does not touch your test.
       </PageTitle>
+
+      <FaceUpload image={faceImage} onDone={loadFace} />
 
       {result?.error ? <Callout kind="danger">{result.error}</Callout> : null}
 

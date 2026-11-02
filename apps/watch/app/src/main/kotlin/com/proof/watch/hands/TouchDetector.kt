@@ -1,133 +1,105 @@
 package com.proof.watch.hands
 
-import java.util.ArrayDeque
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 /**
- * Turns a stream of sensor samples into counted face touches. Used by Hands Off and by the accuracy test,
- * so the test measures exactly the rule that counts.
+ * Counts a face touch when the forearm is raised from hanging at the side up to face height.
  *
- * A touch counts only when, in order:
- *  1. a real hand movement matches your calibrated touches for a short stretch (about 0.15 s), then
- *  2. the hand stops (about 0.3 s of stillness) within about 1.8 s, and
- *  3. it stops at your face pose: the watch is angled the way it was while you held your face in calibration.
- * A wave, a sip, or a wrist flick moves through without settling at that angle, so it is not counted.
- * After a count, the hand has to settle for about a second before the next touch can count.
+ * On a watch, the strap runs along Y. Hanging down puts gravity on Y. At the face the forearm is
+ * roughly level, so Y drops and gravity sits across the watch (X) or out of the glass (Z).
+ * One raise counts once. The arm has to drop again before the next raise counts.
+ * Sample counts, not the clock, so a recorded gesture replays the same way.
  *
- * Time is measured in accelerometer samples (about 50 a second), so a recording can be replayed exactly.
+ * The classifier arguments stay so older call sites compile. This rule does not use them:
+ * calibration was missing real raises.
  */
-class TouchDetector(private val classifier: HandsClassifier, savedPoses: List<FloatArray>) {
-    private val accel = ArrayDeque<FloatArray>()
-    private val gyro = ArrayDeque<FloatArray>()
-    private var tick = 0
-    private var streak = 0
-    private var armed = true
-    private var quiet = 0
-    private var candidateAt = -1
-    private var dwell = 0
-
-    /** Face poses (unit gravity vectors) to compare against, and how close the angle must be. */
-    private val poses: List<FloatArray>
-    private val poseCos: Float
+class TouchDetector(
+    @Suppress("UNUSED_PARAMETER") classifier: HandsClassifier,
+    @Suppress("UNUSED_PARAMETER") savedPoses: List<FloatArray>,
+) {
+    private var gx = 0f
+    private var gy = 0f
+    private var gz = 0f
+    private var filtered = false
+    private var sinceDown = LARGE
+    private var hold = 0
+    private var locked = false
 
     /** Movement features of the window that started the last counted touch (for logging). */
     var lastFeatures: FloatArray? = null
         private set
 
-    init {
-        if (savedPoses.isNotEmpty()) {
-            poses = savedPoses
-            poseCos = 0.85f // within about 32°
-        } else {
-            // Older calibration without held poses: approximate with the average orientation of the touch windows.
-            val touches = classifier.snapshot().positive
-            poses = if (touches.isEmpty()) {
-                emptyList()
-            } else {
-                val v = FloatArray(3) { i -> touches.map { it[6 + i] }.average().toFloat() }
-                listOf(unit(v))
-            }
-            poseCos = 0.7f // looser, because this is only an approximation
-        }
-    }
-
     fun addGyro(sample: FloatArray) {
-        gyro.addLast(sample)
-        while (gyro.size > WINDOW) gyro.removeFirst()
+        // Orientation comes from the accelerometer. Gyro is accepted so callers can keep feeding it.
+        if (sample.size < 3) return
     }
 
-    /** Feed one accelerometer sample. Returns true when a face touch is recognised. */
+    /** Feed one accelerometer sample. Returns true when the hand has been raised to the face. */
     fun addAccel(sample: FloatArray): Boolean {
-        tick++
-        accel.addLast(sample)
-        while (accel.size > WINDOW) accel.removeFirst()
-        if (accel.size < 40 || !classifier.ready) return false
-        if (candidateAt >= 0) return dwellStep()
+        val alpha = 0.28f
+        if (!filtered) {
+            gx = sample[0]
+            gy = sample[1]
+            gz = sample[2]
+            filtered = true
+        } else {
+            gx += alpha * (sample[0] - gx)
+            gy += alpha * (sample[1] - gy)
+            gz += alpha * (sample[2] - gz)
+        }
 
-        val features = HandsClassifier.features(accel.toList(), gyro.toList()) ?: return false
-        if (!classifier.isMoving(features)) {
-            streak = 0
-            if (++quiet >= QUIET_TO_REARM) armed = true
+        val hanging = abs(gy) > HANGING_Y && gz < HANGING_Z_MAX
+        val atFace = abs(gy) < RAISED_Y && (gz > RAISED_Z || abs(gx) > RAISED_X)
+
+        if (hanging) {
+            sinceDown = 0
+            hold = 0
+            if (locked) locked = false
             return false
         }
-        quiet = 0
-        if (!armed) return false
-
-        streak = if (classifier.classify(features) == "face") streak + 1 else 0
-        if (streak < STREAK) return false
-
-        // The movement looked like a touch. Now it has to stop at the face.
-        streak = 0
-        armed = false
-        candidateAt = tick
-        dwell = 0
-        lastFeatures = features
-        return false
-    }
-
-    private fun dwellStep(): Boolean {
-        if (tick - candidateAt > DWELL_WINDOW) {
-            candidateAt = -1 // moved past the face without stopping: not a touch
-            dwell = 0
+        if (sinceDown < LARGE) sinceDown++
+        if (locked || !atFace) {
+            hold = 0
             return false
         }
-        val recent = accel.toList().takeLast(SHORT)
-        val mags = recent.map { norm(it) }
-        val meanMag = mags.average().toFloat()
-        val spread = sqrt(mags.map { (it - meanMag) * (it - meanMag) }.average()).toFloat()
-        val turning = gyro.toList().takeLast(SHORT).map { norm(it) }.average().takeIf { !it.isNaN() }?.toFloat() ?: 0f
-        val still = spread < STILL_SPREAD && turning < STILL_TURN
-        val direction = unit(FloatArray(3) { i -> recent.map { it[i] }.average().toFloat() })
-        val atFace = poses.isEmpty() || poses.any { dot(it, direction) >= poseCos }
+        // The lift has to start from a hanging arm. A hand that is already up does not keep counting.
+        if (sinceDown > RAISE_WINDOW) {
+            hold = 0
+            return false
+        }
+        hold++
+        if (hold < HOLD) return false
 
-        dwell = if (still && atFace) dwell + 1 else 0
-        if (dwell < DWELL) return false
-        candidateAt = -1
-        dwell = 0
+        locked = true
+        hold = 0
+        lastFeatures = floatArrayOf(gx, abs(gy), gz, 0f, 0f, 0f, gx, gy, gz)
         return true
     }
 
     fun reset() {
-        streak = 0
-        armed = true
-        quiet = 0
-        candidateAt = -1
-        dwell = 0
+        sinceDown = LARGE
+        hold = 0
+        locked = false
     }
 
     companion object {
-        private const val WINDOW = 50
         private const val SHORT = 16
-        /** About 0.15 s of consecutive "face" windows. */
-        private const val STREAK = 8
-        /** About 0.3 s of stillness at the face. */
-        private const val DWELL = 15
-        /** The stop has to happen within about 1.8 s of the movement. */
-        private const val DWELL_WINDOW = 90
-        /** About 1 s of a settled hand before another touch can count. */
-        private const val QUIET_TO_REARM = 50
         private const val STILL_SPREAD = 0.35f
-        private const val STILL_TURN = 0.7f
+        /** |accel Y| while the arm is hanging. Gravity on a watch sits along the strap. */
+        private const val HANGING_Y = 6.0f
+        /** Watch glass is not already pointed up while the arm is hanging. */
+        private const val HANGING_Z_MAX = 5.0f
+        /** |accel Y| once the forearm has come up. */
+        private const val RAISED_Y = 5.0f
+        /** Glass tilted up toward the face, or gravity across the watch if the face stays vertical. */
+        private const val RAISED_Z = 1.0f
+        private const val RAISED_X = 4.0f
+        /** About 0.2 s at face height, at the game sensor rate. */
+        private const val HOLD = 8
+        /** The raise has to finish within about 2.5 s of the arm leaving the side. */
+        private const val RAISE_WINDOW = 120
+        private const val LARGE = 10_000
 
         fun norm(v: FloatArray) = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
 
@@ -135,8 +107,6 @@ class TouchDetector(private val classifier: HandsClassifier, savedPoses: List<Fl
             val n = norm(v).coerceAtLeast(1e-3f)
             return floatArrayOf(v[0] / n, v[1] / n, v[2] / n)
         }
-
-        private fun dot(a: FloatArray, b: FloatArray) = a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 
         /**
          * The face pose from a calibration recording: the first still moment after the hand starts moving,

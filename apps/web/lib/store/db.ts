@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-export type ScanPurpose = "noise" | "daily" | "lighting" | "claim";
+export type ScanPurpose = "noise" | "daily" | "lighting" | "claim" | "portrait";
 
 export type User = {
   id: string;

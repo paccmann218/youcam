@@ -197,12 +197,10 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 status = "Hands off stopped."
             } else {
                 HandsService.start(this@MainActivity)
-                status = if (calibrated) "Listening for face touches." else "Listening, but calibrate first so it knows your touch."
+                status = "Listening. Raise your hand to your face and hold it there."
             }
         }
-        if (!calibrated) {
-            Text("Calibrate in Setup first →", color = Brutal.Ink, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
+        Text("Raise your hand from your side up to your face.", color = Brutal.Ink, fontSize = 10.sp, fontWeight = FontWeight.Bold)
     }
 
     /* ------------------------------------------------------------------ page 2: routine */

@@ -142,7 +142,7 @@ class HandsService : Service(), SensorEventListener {
     }
 
     companion object {
-        private const val COOLDOWN_MS = 4000L
+        private const val COOLDOWN_MS = 1200L
 
         /** Set by the app while it records calibration, so those motions are not counted as touches. */
         @Volatile

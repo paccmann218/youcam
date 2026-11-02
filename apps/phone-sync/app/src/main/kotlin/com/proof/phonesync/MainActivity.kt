@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
             client = HealthConnectClient.getOrCreate(this)
         }
         setContent {
-            var base by remember { mutableStateOf(prefs.getString("base", "http://192.168.1.2:3000") ?: "") }
+            var base by remember { mutableStateOf(prefs.getString("base", "http://10.168.189.167:3000") ?: "") }
             var pair by remember { mutableStateOf(prefs.getString("pair", "") ?: "") }
             var status by remember { mutableStateOf(if (::client.isInitialized) "Health Connect is on this phone." else "Health Connect is not available.") }
             onStatus = { status = it }

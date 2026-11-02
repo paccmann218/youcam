@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   if (!user?.consentAt) return json({ error: "Consent comes before reading your colours." }, 403);
   const db = await readDb();
   const face = latestFace(db, user.id);
-  if (!face?.imageFile) return json({ error: "Take a face scan first, then WorthIt can read your colours." }, 400);
+  if (!face?.imageFile) return json({ error: "Add a face photo first, then WorthIt can read your colours." }, 400);
   try {
     const bytes = await faceBytes(face);
     const tones = await runColorTones(bytes, face.imageFile);
